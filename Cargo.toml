@@ -1,10 +1,13 @@
 [package]
-name = "vmod_rs_example"
+name = "vmod_httpstats"
 version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-varnish = "0.5.1"
+varnish = "0.5.5"
+
+[build-dependencies]
+cdylib-plugin = "0.1"
 
 [lib]
 crate-type = ["cdylib"]

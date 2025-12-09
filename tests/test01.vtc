@@ -1,47 +1,97 @@
-# first thing to do: give a title to the test
-varnishtest "testing .is_even() and .captain_ovious()"
+varnishtest "testing httpstats backend and frontend response code tracking"
 
-# describe what the server should receive and send back
-# "man vtc" is your friend here
+# Backend server that returns various status codes
 server s1 {
 	rxreq
-	expect req.url == "/first"
-	expect req.http.even == "true"
-	expect req.http.cap == "I was given 17 as argument"
-	txresp
+	expect req.url == "/ok"
+	txresp -status 200
 
 	rxreq
-	expect req.url == "/second"
-	expect req.http.even == "false"
-	expect req.http.cap == "I was called without an argument"
-	txresp
+	expect req.url == "/created"
+	txresp -status 201
+
+	rxreq
+	expect req.url == "/redirect"
+	txresp -status 302
+
+	rxreq
+	expect req.url == "/notfound"
+	txresp -status 404
+
+	rxreq
+	expect req.url == "/error"
+	txresp -status 500
+
+	rxreq
+	expect req.url == "/unavailable"
+	txresp -status 503
+
+	rxreq
+	expect req.url == "/check"
+	txresp -status 200
 } -start
 
-# set up the varnish server with our custom logic
 varnish v1 -vcl+backend {
-	import rs_example from "${vmod}";
+	import httpstats from "${vmod}";
 
-	sub vcl_recv {
-		# modify the request here and the changes will be carried on
-		# to the backend
-		if (req.url == "/first") {
-			set req.http.even = rs_example.is_even(8);
-			set req.http.cap = rs_example.captain_obvious(17);
-		} else {
-			set req.http.even = rs_example.is_even(3);
-			set req.http.cap = rs_example.captain_obvious();
+	sub vcl_init {
+		new s = httpstats.stats();
+	}
+
+	sub vcl_backend_response {
+		s.record_backend(beresp.status);
+	}
+
+	sub vcl_deliver {
+		s.record_frontend(resp.status);
+
+		if (req.url == "/check") {
+			set resp.http.backend-2xx = s.backend_2xx();
+			set resp.http.backend-3xx = s.backend_3xx();
+			set resp.http.backend-4xx = s.backend_4xx();
+			set resp.http.backend-5xx = s.backend_5xx();
+			set resp.http.frontend-2xx = s.frontend_2xx();
+			set resp.http.frontend-3xx = s.frontend_3xx();
+			set resp.http.frontend-4xx = s.frontend_4xx();
+			set resp.http.frontend-5xx = s.frontend_5xx();
 		}
 	}
 } -start
 
-# finally, run the client, if something goes wrong, the server
-# will complain, and we won't receive a response back
 client c1 {
-	txreq -url "/first"
+	txreq -url "/ok"
 	rxresp
 	expect resp.status == 200
 
-	txreq -url "/second"
+	txreq -url "/created"
+	rxresp
+	expect resp.status == 201
+
+	txreq -url "/redirect"
+	rxresp
+	expect resp.status == 302
+
+	txreq -url "/notfound"
+	rxresp
+	expect resp.status == 404
+
+	txreq -url "/error"
+	rxresp
+	expect resp.status == 500
+
+	txreq -url "/unavailable"
+	rxresp
+	expect resp.status == 503
+
+	txreq -url "/check"
 	rxresp
 	expect resp.status == 200
+	expect resp.http.backend-2xx == "3"
+	expect resp.http.backend-3xx == "1"
+	expect resp.http.backend-4xx == "1"
+	expect resp.http.backend-5xx == "2"
+	expect resp.http.frontend-2xx == "3"
+	expect resp.http.frontend-3xx == "1"
+	expect resp.http.frontend-4xx == "1"
+	expect resp.http.frontend-5xx == "2"
 } -run

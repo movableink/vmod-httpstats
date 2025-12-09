@@ -6,27 +6,57 @@
    It will be automatically updated on each build.
 
 -->
-# Varnish Module (VMOD) `rs_example`
+# Varnish Module (VMOD) `httpstats`
 
 ```vcl
 // Place import statement at the top of your VCL file
 // This loads vmod from a standard location
-import rs_example;
+import httpstats;
 
 // Or load vmod from a specific file
-import rs_example from "path/to/librs_example.so";
+import httpstats from "path/to/libhttpstats.so";
 ```
 
-### Function `BOOL rs_example.is_even(INT n)`
+### Constructor `httpstats.stats()`
 
-This will tell you if a number is even, isn't that odd?
+Create a new stats instance for tracking HTTP response codes
 
-* `INT n`:
-the number to test
+#### Method `VOID <object>.record_backend(INT status)`
 
-### Function `STRING rs_example.captain_obvious([INT opt])`
+Record a backend response by status code
 
-Produce a string explaining which number you provided as argument
+#### Method `VOID <object>.record_frontend(INT status)`
 
-* `[INT opt]`:
-give us a number, or don't, it's optional!
+Record a frontend response by status code
+
+#### Method `INT <object>.backend_2xx()`
+
+Get the count of backend 2xx responses
+
+#### Method `INT <object>.backend_3xx()`
+
+Get the count of backend 3xx responses
+
+#### Method `INT <object>.backend_4xx()`
+
+Get the count of backend 4xx responses
+
+#### Method `INT <object>.backend_5xx()`
+
+Get the count of backend 5xx responses
+
+#### Method `INT <object>.frontend_2xx()`
+
+Get the count of frontend 2xx responses
+
+#### Method `INT <object>.frontend_3xx()`
+
+Get the count of frontend 3xx responses
+
+#### Method `INT <object>.frontend_4xx()`
+
+Get the count of frontend 4xx responses
+
+#### Method `INT <object>.frontend_5xx()`
+
+Get the count of frontend 5xx responses
