@@ -36,7 +36,7 @@ jobs:
         sudo apt-get update
         # Pin packagecloud repo to have higher priority than default Ubuntu repos
         echo -e "Package: varnish*\nPin: origin packagecloud.io\nPin-Priority: 1000" | sudo tee /etc/apt/preferences.d/varnish
-        sudo apt-get install -y varnish varnish-dev
+        sudo apt-get install -y varnish=6.0.13-1~jammy varnish-dev=6.0.13-1~jammy
 
     - name: Install cargo-deb
       run: cargo install cargo-deb
