@@ -34,6 +34,8 @@ jobs:
       run: |
         curl -s https://packagecloud.io/install/repositories/varnishcache/${{ matrix.varnish }}/script.deb.sh | sudo bash
         sudo apt-get update
+        # Pin packagecloud repo to have higher priority than default Ubuntu repos
+        echo -e "Package: varnish*\nPin: origin packagecloud.io\nPin-Priority: 1000" | sudo tee /etc/apt/preferences.d/varnish
         sudo apt-get install -y varnish varnish-dev
 
     - name: Install cargo-deb
