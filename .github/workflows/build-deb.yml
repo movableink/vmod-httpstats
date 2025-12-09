@@ -15,6 +15,7 @@ jobs:
           - ubuntu-22.04
           - ubuntu-24.04
         varnish:
+          - varnish60lts
           - varnish77
           - varnish80
     runs-on: ${{ matrix.os }}

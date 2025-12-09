@@ -11,3 +11,31 @@ cdylib-plugin = "0.1"
 
 [lib]
 crate-type = ["cdylib"]
+
+[package.metadata.deb]
+name = "vmod-httpstats"
+maintainer = "Michael Nutt <mnutt@movableink.com>"
+provides = "vmod-httpstats"
+conflicts = "vmod-httpstats"
+section = "web"
+priority = "optional"
+assets = [
+    ["target/release/libvmod_httpstats.so", "usr/lib/varnish/vmods/", "644"],
+]
+extended-description = """
+A Varnish VMOD for counting backend and frontend responses by http response status
+This VMOD allows the VCL to record http response status on backend and frontend
+responses.
+"""
+
+[package.metadata.deb.variants.varnish60lts]
+name = "vmod-httpstats-varnish60lts"
+depends = "varnish (>= 6.0.0), varnish (<< 6.1.0)"
+
+[package.metadata.deb.variants.varnish77]
+name = "vmod-httpstats-varnish77"
+depends = "varnish (>= 7.7.0), varnish (<< 8.0.0)"
+
+[package.metadata.deb.variants.varnish80]
+name = "vmod-httpstats-varnish80"
+depends = "varnish (>= 8.0.0), varnish (<< 8.1.0)"
